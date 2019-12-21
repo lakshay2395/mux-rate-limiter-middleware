@@ -1,21 +1,22 @@
 package leakybucket
 
 import (
+	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/go-redis/redis/v7"
-	"github.com/lakshay2395/rate-limiting-algorithms/limiters"
+	"github.com/lakshay2395/mux-rate-limiter-middleware/limiters"
 )
 
 type limiter struct {
 	client             *redis.Client
 	expiry             time.Duration
 	limit              int
-	identifierCallback func() string
+	identifierCallback func(r *http.Request) string
 }
 
-func NewLeakyBucket(client *redis.Client, limit int, expiry time.Duration, identifierCallback func() string) limiters.Limiter {
+func NewLeakyBucket(client *redis.Client, limit int, expiry time.Duration, identifierCallback func(r *http.Request) string) limiters.Limiter {
 	return limiter{
 		client:             client,
 		expiry:             expiry,
@@ -24,8 +25,8 @@ func NewLeakyBucket(client *redis.Client, limit int, expiry time.Duration, ident
 	}
 }
 
-func (l limiter) CanPass() (bool, error) {
-	identifier := l.identifierCallback()
+func (l limiter) CanPass(r *http.Request) (bool, error) {
+	identifier := l.identifierCallback(r)
 	currentMinute := getCurrentMinute()
 	value, err := l.client.Get(identifier + currentMinute).Result()
 	count := 0

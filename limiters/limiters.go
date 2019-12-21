@@ -1,5 +1,7 @@
 package limiters
 
+import "net/http"
+
 type Limiter interface {
-	CanPass() (bool, error)
+	CanPass(r *http.Request) (bool, error)
 }

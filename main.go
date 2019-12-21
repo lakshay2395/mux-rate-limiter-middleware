@@ -8,12 +8,12 @@ import (
 
 	"github.com/go-redis/redis/v7"
 	"github.com/gorilla/mux"
-	"github.com/lakshay2395/rate-limiting-algorithms/middleware"
+	"github.com/lakshay2395/mux-rate-limiter-middleware/middleware"
 )
 
 func main() {
 	client, _ := getRedisClient()
-	limiter := middleware.LeakyBucket(client, 10, 60*time.Second, func() string {
+	limiter := middleware.LeakyBucket(client, 10, 60*time.Second, func(r *http.Request) string {
 		return "U2"
 	})
 	r := mux.NewRouter()
